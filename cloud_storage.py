@@ -22,9 +22,47 @@ def handle_exception(func):
             print(f"An error occurred: {e}")
     return wrapper
 
+# Create a new bucket
+@handle_exception
+def create_bucket(bucket_name, storage_class, location):
+    '''
+    storage_class = ['STANDARD', 'NEARLINE', 'COLDLINE', 'ARCHIVE]
+    location = ['us', 'eu', 'asia', 'au', 'ca']
+    '''
+    bucket = storage_client.bucket(bucket_name)
+    bucket.storage_class = storage_class
+    new_bucket = storage_client.create_bucket(bucket, location=location)
+
+    print(
+        "Created bucket {} in {} with storage class {}".format(
+            new_bucket.name, new_bucket.location, new_bucket.storage_class
+        )
+    )
+    return new_bucket
+
+# Delete bucket_name bucket
+@handle_exception
+def delete_bucket(bucket_name):
+    bucket = storage_client.get_bucket(bucket_name)
+    bucket.delete()
+
+    print(f"Bucket {bucket.name} deleted")
+
+# List all the buckets
+@handle_exception
+def list_buckets():
+    buckets = list(storage_client.list_buckets())
+
+    if not buckets: 
+        print("No buckets found.")
+    else:
+        for bucket in buckets:
+            print(bucket.name)
+
+
 # Prints the metadata of a GCP bucket_name.
 @handle_exception
-def bucket_metadata(bucket_name):
+def get_bucket_metadata(bucket_name):
     bucket = storage_client.get_bucket(bucket_name)
     metadata = {
         "ID": bucket.id,
